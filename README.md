@@ -71,6 +71,93 @@ The code is configured to point to a local git repository, and the default
 version is main, which means it will always pick the last committed change in
 the local repo.
 
+## Example of a test pipeline
+
+If the LIBRARY env var is configured to point to the shared library available
+at the https://github.com/ferrucciobongianni/jenkins-shared-lib-local-development
+repository, the pipeline below should run.
+
+```
+@Library('test-library') _
+
+import mypackage.MyClass
+
+def testClass() {
+ def obj = new MyClass(this) // this gives MyClass access to Jenkins steps
+
+ obj.hello("John Doe")
+}
+
+pipeline {
+    agent any
+    stages {
+        stage('test func') {
+            steps {
+                hello() // this is defined in the shared library's vars dir
+            }
+        }
+        stage('test class') {
+            steps {
+                testClass()
+            }
+        }
+    }
+}
+```
+
+The Console log should show something like this:
+
+```
+Started by user admin
+Loading library test-library@main
+Attempting to resolve main from remote references...
+ > git --version # timeout=10
+ > git --version # 'git version 2.39.2'
+ > git ls-remote -h -- /var/library/.git # timeout=10
+Found match: refs/heads/main revision 02cc168375b5e0fe8ce3c50e422e54f6914eddb2
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/test-library@libs/aa6d3d6263533cb8e2d1c2bdf0863d8bec245dc9bef690e8ba377d656d9de340/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url /var/library/.git # timeout=10
+Fetching without tags
+Fetching upstream changes from /var/library/.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.39.2'
+ > git fetch --no-tags --force --progress -- /var/library/.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+Checking out Revision 02cc168375b5e0fe8ce3c50e422e54f6914eddb2 (main)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 02cc168375b5e0fe8ce3c50e422e54f6914eddb2 # timeout=10
+Commit message: "Sample code of a shared library"
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/test-library
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (test func)
+[Pipeline] sh
++ echo hello world
+hello world
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (test class)
+[Pipeline] sh
++ echo hello John Doe
+hello John Doe
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS
+```
+
+To test the full development / test cycle:
+
+1. make a change in the library
+2. commit the change locally
+3. go to Jenkins UI and re-run the pipeline to test the changes
 
 
 
