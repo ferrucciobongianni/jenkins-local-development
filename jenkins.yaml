@@ -1,0 +1,19 @@
+jenkins:
+  systemMessage: "Test Shared Libraries"
+
+unclassified:
+  globalLibraries:
+    libraries:
+      - name: "test-library"
+        defaultVersion: "main"
+        implicit: false
+        includeInChangesets: false
+        retriever:
+          modernSCM:
+            scm:
+              git:
+                id: "test-lib"
+                remote: "/var/library/.git"
+                credentialsId: ""
+                traits:
+                  - "gitBranchDiscovery"

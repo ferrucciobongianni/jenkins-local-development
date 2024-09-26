@@ -1,0 +1,25 @@
+
+# The LIBRARY env var must be defined and point to the directory on the host
+# where the Git repository of the library to test is.
+
+version: '3.3'
+services:
+  jenkins:
+    image: "jenkins/jenkins:lts"
+    user: jenkins
+    environment:
+      - JAVA_OPTS=-Dhudson.plugins.git.GitSCM.ALLOW_LOCAL_CHECKOUT=true
+    ports:
+      - "8080:8080"
+    volumes:
+      - jenkins_home_local:/var/jenkins_home
+      - ${LIBRARY}:/var/library
+      - ${PWD}/jenkins.yaml:/var/jenkins_home/jenkins.yaml
+    networks:
+      - jenkins-net
+
+volumes:
+  jenkins_home_local: null
+
+networks:
+  jenkins-net: null
